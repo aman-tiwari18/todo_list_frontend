@@ -16,14 +16,14 @@ import { useEffect } from "react";
 
 const PrivateRouteTodo = ({ state, children }) => {
   if (!state.user) {
-    return <Navigate replace to="/login" />;
+    return <Navigate replace to="/todo_list_frontend/login" />;
   }
   return children;
 };
 
 const PrivateRouteLogin = ({ state, children }) => {
   if (state.user) {
-    return <Navigate replace to={"/"} />;
+    return <Navigate replace to={"/todo_list_frontend"} />;
   }
 
   return children;
@@ -38,7 +38,7 @@ function App() {
       <Routes>
         <Route
           exact
-          path="/login"
+          path="/todo_list_frontend/login"
           element={
             <PrivateRouteLogin state={state}>
               <Login />
@@ -47,7 +47,7 @@ function App() {
         />
         <Route
           exact
-          path="/"
+          path="/todo_list_frontend"
           element={
             <PrivateRouteTodo state={state}>
               <TodoPage />
@@ -56,7 +56,7 @@ function App() {
         />
         <Route
           exact
-          path="/register"
+          path="/todo_list_frontend/register"
           element={
             <PrivateRouteLogin state={state}>
               <Register />
