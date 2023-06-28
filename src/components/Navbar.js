@@ -23,7 +23,7 @@ const Navbar = () => {
               dispatch(logoutUser());
               dispatch(reset());
 
-              navigate("/login");
+              navigate("/todo_list_frontend/login");
             }}
           >
             Logout

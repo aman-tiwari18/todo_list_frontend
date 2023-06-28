@@ -77,7 +77,7 @@ const Login = () => {
             </button>
           </div>
         </form>
-        <Link to="/register">don't have a account?</Link>
+        <Link to="/todo_list_frontend/register">don't have a account?</Link>
       </div>
     </div>
   );

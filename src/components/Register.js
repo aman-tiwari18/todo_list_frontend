@@ -92,7 +92,7 @@ const Register = () => {
             </button>
           </div>
         </form>
-        <Link to="/login">alyready have a account!</Link>
+        <Link to="/todo_list_frontend/login">alyready have a account!</Link>
       </div>
     </div>
   );
