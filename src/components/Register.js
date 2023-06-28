@@ -21,7 +21,7 @@ const Register = () => {
         username: username,
         password: password,
       };
-      console.log(userData);
+      // console.log(userData);
 
       dispatch(registerUser(userData));
     }

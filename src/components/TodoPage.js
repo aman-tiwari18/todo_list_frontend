@@ -1,34 +1,54 @@
 import React, { useState, useEffect } from "react";
 import AddList from "./AddList";
 import Navbar from "./Navbar";
-import { useDispatch } from "react-redux";
-import { createNewList, deleteList } from "../Actions/listActions";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  createNewList,
+  deleteList,
+  fetchAllListAction,
+} from "../Actions/listActions";
 
 const TodoPage = () => {
   const [listName, setListName] = useState("");
   const [todoLists, setTodoLists] = useState([]);
 
   const dispatch = useDispatch();
+  const state = useSelector((state) => state.auth);
 
   const handleAddTodoList = () => {
     if (listName.trim() !== "") {
       const newTodoList = {
-        id: Date.now(),
         name: listName,
-        tasks: [],
       };
-      setTodoLists([...todoLists, newTodoList]);
       dispatch(createNewList(newTodoList));
       setListName("");
     }
   };
 
+  useEffect(() => {
+    if (state.user?.token !== null) {
+      dispatch(fetchAllListAction(state.user));
+    }
+  }, [dispatch, state.user, state.user?.token]);
+
+  useEffect(() => {
+    if (state.isListError) {
+    }
+  }, [state.isListError]);
+
+  useEffect(() => {
+    if (state.isListSuccess) {
+      setTodoLists(state.list);
+    }
+  }, [state.isListSuccess, state.list]);
+
   const handleDeleteTodoList = (id) => {
-    const updatedTodoLists = todoLists.filter((list) => list.id !== id);
-    setTodoLists(updatedTodoLists);
-    dispatch(deleteList(updatedTodoLists));
+    dispatch(deleteList(id));
   };
 
+  if (state.isListLoading) {
+    return <p>Loading...</p>;
+  }
   return (
     <div>
       <Navbar />
@@ -60,11 +80,13 @@ const TodoPage = () => {
                 <h2 className="text-lg font-semibold">{list.name}</h2>
                 <button
                   className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 my-1 px-2 rounded"
-                  onClick={() => handleDeleteTodoList(list.id)}
+                  onClick={() => {
+                    handleDeleteTodoList(list.id);
+                  }}
                 >
                   Delete List
                 </button>
-                <AddList tasks={list.tasks} />
+                <AddList key={list.id} todoListId={list.id} />
               </div>
             ))
           )}

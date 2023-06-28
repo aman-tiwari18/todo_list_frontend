@@ -1,40 +1,50 @@
-import React, { useState } from "react";
-import { useDispatch } from "react-redux";
-import { createNewTask, DeleteTask, UpdateTask } from "../Actions/listActions";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  createNewTask,
+  DeleteTask,
+  UpdateTask,
+  fetchListTaskAction,
+} from "../Actions/listActions";
 
-const AddList = ({ tasks }) => {
+const AddList = ({ todoListId }) => {
   const [taskName, setTaskName] = useState("");
-  const [taskList, setTaskList] = useState(tasks);
+  const [taskList, setTaskList] = useState([]);
 
   const dispatch = useDispatch();
+  const state = useSelector((state) => state.auth);
 
   const handleAddTask = (e) => {
     e.preventDefault();
     if (taskName.trim() !== "") {
-      const newTask = {
-        id: Date.now(),
-        name: taskName,
-        completed: false,
-      };
-      setTaskList([...taskList, newTask]);
-      dispatch(createNewTask(newTask));
+      console.log(todoListId);
+      dispatch(
+        createNewTask({ name: taskName, todoListId, token: state.user.token })
+      );
       setTaskName("");
     }
   };
 
   const handleToggleComplete = (taskId) => {
-    const updatedTasks = taskList.map((task) =>
-      task.id === taskId ? { ...task, completed: !task.completed } : task
-    );
-    setTaskList(updatedTasks);
-    dispatch(UpdateTask(updatedTasks));
+    dispatch(UpdateTask(taskId));
   };
 
   const handleDeleteTask = (taskId) => {
-    const updatedTasks = taskList.filter((task) => task.id !== taskId);
-    setTaskList(updatedTasks);
-    dispatch(DeleteTask(updatedTasks));
+    dispatch(DeleteTask(taskId));
   };
+
+  useEffect(() => {
+    if (state.user) dispatch(fetchListTaskAction(todoListId));
+  }, [dispatch, state.user, todoListId]);
+
+  useEffect(() => {
+    if (state.isTaskSuccess) {
+      let tasks = state.tasks.filter((task) => task?.todo_list === todoListId);
+      setTaskList(tasks);
+    }
+  }, [state.isTaskSuccess, state.tasks, todoListId]);
+
+  if (state.isTaskLoading) return <p>Loading</p>;
 
   return (
     <div>
@@ -53,7 +63,7 @@ const AddList = ({ tasks }) => {
           Add Task
         </button>
       </div>
-      {taskList.length === 0 ? (
+      {taskList === null && taskList?.length === 0 ? (
         <p>No tasks added yet.</p>
       ) : (
         <ul className="list-disc pl-6">

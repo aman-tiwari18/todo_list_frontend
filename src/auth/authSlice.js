@@ -9,15 +9,25 @@ import {
   createNewTask,
   deleteList,
   fetchAllListAction,
+  fetchListTaskAction,
 } from "../Actions/listActions";
 
-const USER = getLocalStorage("user") ? getLocalStorage("user") : null;
+const user = getLocalStorage("user");
+
+const USER = user ?? null;
 const initialState = {
   user: USER,
-  //   classes: null,
+  list: [],
+  tasks: [],
   isError: false,
   isSuccess: false,
   isLoading: false,
+  isListLoading: false,
+  isListError: false,
+  isListSuccess: false,
+  isTaskSuccess: false,
+  isTaskError: false,
+  isTaskLoading: false,
   message: "",
 };
 
@@ -61,6 +71,7 @@ export const authSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
+        state.isError = false;
         state.user = action.payload;
       })
       .addCase(loginUser.rejected, (state, action) => {
@@ -70,82 +81,108 @@ export const authSlice = createSlice({
         state.user = null;
       })
       .addCase(fetchAllListAction.fulfilled, (state, action) => {
-        state.classes = action.payload?.data;
-        state.isSuccess = true;
+        state.list = action.payload?.data;
+        state.isListSuccess = true;
+        state.isListError = false;
+        state.isListLoading = false;
       })
       .addCase(fetchAllListAction.rejected, (state, action) => {
-        state.isSuccess = false;
-        state.isLoading = false;
-        state.isError = true;
+        state.isListSuccess = false;
+        state.isListLoading = false;
+        state.isListError = true;
         state.message = action.payload;
       })
       .addCase(fetchAllListAction.pending, (state) => {
-        state.isLoading = true;
+        state.isListLoading = true;
+        state.isListError = false;
+        state.isListSuccess = false;
       })
       .addCase(createNewList.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.isSuccess = true;
-        state.user = action.payload;
+        state.isListLoading = false;
+        state.isListSuccess = true;
+        let newList = state.list.some(
+          (item) => item?.id === action.payload?.data?.id
+        );
+        if (!newList) {
+          state.list = [...state.list, action.payload?.data];
+        }
       })
       .addCase(createNewList.pending, (state) => {
-        state.isLoading = true;
+        state.isListLoading = true;
       })
       .addCase(createNewList.rejected, (state, action) => {
-        state.isLoading = false;
-        state.isError = true;
+        state.isListLoading = false;
+        state.isListError = true;
         state.message = action.payload;
       })
       .addCase(deleteList.pending, (state) => {
-        state.isLoading = true;
+        state.isListLoading = true;
       })
       .addCase(deleteList.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.isSuccess = true;
-        state.user = action.payload;
+        let todo = state.list.filter((t) => t.id !== action?.payload?.id);
+        state.list = todo;
+        state.isListLoading = false;
+        state.isListSuccess = true;
       })
       .addCase(deleteList.rejected, (state, action) => {
-        state.isLoading = false;
-        state.isError = true;
+        state.isListLoading = false;
+        state.isListError = true;
         state.message = action.payload;
       })
       .addCase(createNewTask.pending, (state) => {
-        state.isLoading = true;
+        state.isTaskLoading = true;
       })
       .addCase(createNewTask.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.isSuccess = true;
+        state.isTaskLoading = false;
+        state.isTaskSuccess = true;
         state.user = action.payload;
       })
       .addCase(createNewTask.rejected, (state, action) => {
-        state.isLoading = false;
-        state.isError = true;
+        state.isTaskLoading = false;
+        state.isTaskError = true;
         state.message = action.payload;
       })
       .addCase(DeleteTask.pending, (state) => {
-        state.isLoading = true;
+        state.isTaskLoading = true;
       })
       .addCase(DeleteTask.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.isSuccess = true;
-        state.user = action.payload;
+        state.isTaskLoading = false;
+        state.isTaskSuccess = true;
       })
       .addCase(DeleteTask.rejected, (state, action) => {
-        state.isLoading = false;
-        state.isError = true;
+        state.isTaskLoading = false;
+        state.isTaskError = true;
         state.message = action.payload;
       })
       .addCase(UpdateTask.pending, (state) => {
-        state.isLoading = true;
+        state.isTaskLoading = true;
       })
       .addCase(UpdateTask.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.isSuccess = true;
-        state.user = action.payload;
+        state.isTaskLoading = false;
+        state.isTaskSuccess = true;
       })
       .addCase(UpdateTask.rejected, (state, action) => {
-        state.isLoading = false;
-        state.isError = true;
+        state.isTaskLoading = false;
+        state.isTaskError = true;
         state.message = action.payload;
+      })
+      .addCase(fetchListTaskAction.rejected, (state, action) => {
+        state.isTaskLoading = false;
+        state.isTaskError = true;
+        state.isTaskSuccess = false;
+        state.message = action.payload;
+      })
+      .addCase(fetchListTaskAction.pending, (state, action) => {
+        state.isTaskLoading = true;
+        state.isTaskError = false;
+        state.isTaskSuccess = false;
+        state.message = action.payload;
+      })
+      .addCase(fetchListTaskAction.fulfilled, (state, action) => {
+        state.isTaskLoading = false;
+        state.isTaskError = false;
+        state.isTaskSuccess = true;
+        state.tasks = [...action.payload?.data];
       })
       .addCase(logoutUser.pending, (state) => {
         state.isLoading = true;
@@ -156,15 +193,3 @@ export const authSlice = createSlice({
 export const { reset } = authSlice.actions;
 export const { resetList } = authSlice.actions;
 export default authSlice.reducer;
-
-// newPostRequest: (state) => {
-//     state.loading = true;
-//   },
-//   newPostSuccess: (state, action) => {
-//     state.loading = false;
-//     state.message = action.payload;
-//   },
-//   newPostFailure: (state, action) => {
-//     state.loading = false;
-//     state.error = action.payload;
-//   },

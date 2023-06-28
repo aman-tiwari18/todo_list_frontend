@@ -9,7 +9,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const state = useSelector((state) => state.auth);
 
-  console.log(state);
+  // console.log(state);
 
   return (
     <nav className="bg-gray-800 p-4">
